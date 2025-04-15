@@ -95,6 +95,34 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     clickSound.volume = 0.3;
     clickSound.play().catch(error => console.error('Error playing click sound:', error));
   };
+
+  // Apply specific image enhancements for certain projects
+  const getImageStyle = () => {
+    const baseStyle = {
+      filter: hover ? 'brightness(1.2) contrast(1.1)' : 'brightness(0.8) contrast(0.9)',
+      transition: 'filter 0.3s ease'
+    };
+    
+    // Apply specific enhancements for Egyptian Tech Tablet
+    if (id === 'cyber-relic') {
+      return {
+        ...baseStyle,
+        filter: hover ? 'brightness(1.4) contrast(1.3) saturate(1.2)' : 'brightness(1.1) contrast(1.1) saturate(1.1)',
+        backgroundBlendMode: 'normal'
+      };
+    }
+    
+    // Apply specific enhancements for Cyber Relic
+    if (id === 'cyber-relic' || id === 'egyptian-tech-tablet' || imageSrc.includes('photo-1531731457588')) {
+      return {
+        ...baseStyle,
+        filter: hover ? 'brightness(1.5) contrast(1.2) saturate(1.3)' : 'brightness(1.2) contrast(1.1) saturate(1.2)',
+        backgroundBlendMode: 'normal'
+      };
+    }
+    
+    return baseStyle;
+  };
   
   return (
     <div 
@@ -131,11 +159,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               src={imageSrc} 
               alt={title} 
               className="absolute inset-0 w-full h-full object-cover"
-              style={{
-                filter: hover ? 'brightness(1.2) contrast(1.1)' : 'brightness(0.8) contrast(0.9)',
-                transition: 'filter 0.3s ease'
-              }}
+              style={getImageStyle()}
             />
+            
+            {/* Image Enhancement Layer for specific projects */}
+            {(id === 'cyber-relic' || imageSrc.includes('photo-1531731457588')) && (
+              <div className="absolute inset-0 bg-gradient-to-b from-cyber-neon-blue/10 to-cyber-neon-pink/10 mix-blend-overlay"></div>
+            )}
             
             {/* Scan lines effect */}
             <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.2)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
