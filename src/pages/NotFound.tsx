@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import StarfieldBackground from '../components/StarfieldBackground';
-import { Home, RotateCcw } from 'lucide-react';
+import { Home, RotateCcw, RefreshCw, AlertTriangle } from 'lucide-react';
 
 const NotFound: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ const NotFound: React.FC = () => {
     }))
   );
   const [showInstructions, setShowInstructions] = useState(true);
+  const [countdownActive, setCountdownActive] = useState(true);
 
   useEffect(() => {
     // Increase glitch effect over time
@@ -25,26 +26,45 @@ const NotFound: React.FC = () => {
     }, 2000);
 
     // Countdown timer
-    const countdownInterval = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          navigate('/');
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    let countdownInterval: number | undefined;
+    
+    if (countdownActive) {
+      countdownInterval = window.setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            navigate('/home');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
 
-    // Error sound
-    const errorSound = new Audio('/sounds/error.mp3');
-    errorSound.volume = 0.3;
-    errorSound.play().catch(error => console.error('Error playing error sound:', error));
+    // Try to play error sound
+    const playErrorSound = async () => {
+      try {
+        const errorSound = new Audio('/sounds/error.mp3');
+        errorSound.volume = 0.3;
+        await errorSound.play();
+      } catch (error) {
+        console.error('Error playing error sound:', error);
+      }
+    };
+    
+    playErrorSound();
 
     return () => {
       clearInterval(glitchInterval);
-      clearInterval(countdownInterval);
+      if (countdownInterval) clearInterval(countdownInterval);
     };
-  }, [navigate]);
+  }, [navigate, countdownActive]);
+
+  // Stop the countdown when mini-game starts
+  useEffect(() => {
+    if (!showInstructions) {
+      setCountdownActive(false);
+    }
+  }, [showInstructions]);
 
   // Handle keyboard controls for mini-game
   useEffect(() => {
@@ -78,10 +98,18 @@ const NotFound: React.FC = () => {
           return;
       }
 
-      // Play move sound
-      const moveSound = new Audio('/sounds/move.mp3');
-      moveSound.volume = 0.1;
-      moveSound.play().catch(error => console.error('Error playing move sound:', error));
+      // Try to play move sound
+      const playMoveSound = async () => {
+        try {
+          const moveSound = new Audio('/sounds/move.mp3');
+          moveSound.volume = 0.1;
+          await moveSound.play();
+        } catch (error) {
+          console.error('Error playing move sound:', error);
+        }
+      };
+      
+      playMoveSound();
 
       setPlayerPosition({ x: newX, y: newY });
 
@@ -92,27 +120,38 @@ const NotFound: React.FC = () => {
       );
 
       if (collectibleIndex !== -1) {
-        // Play collect sound
-        const collectSound = new Audio('/sounds/collect.mp3');
-        collectSound.volume = 0.2;
-        collectSound.play().catch(error => console.error('Error playing collect sound:', error));
+        // Try to play collect sound
+        const playCollectSound = async () => {
+          try {
+            const collectSound = new Audio('/sounds/collect.mp3');
+            collectSound.volume = 0.2;
+            await collectSound.play();
+          } catch (error) {
+            console.error('Error playing collect sound:', error);
+          }
+        };
+        
+        playCollectSound();
 
         newCollectibles[collectibleIndex].collected = true;
         setCollectibles(newCollectibles);
-
-        // Add some time to the countdown
-        setCountdown(prev => prev + 2);
       }
 
       // Check if all collectibles are collected
       if (newCollectibles.every(c => c.collected)) {
-        navigate('/');
+        navigate('/home');
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [playerPosition, collectibles, navigate, showInstructions]);
+
+  // Handle manual navigation
+  const handleManualNavigation = () => {
+    setCountdownActive(false);
+    navigate('/home');
+  };
 
   // Render grid cell
   const renderCell = (x: number, y: number) => {
@@ -126,8 +165,8 @@ const NotFound: React.FC = () => {
     }
 
     // Collectible
-    const collectible = collectibles.find(c => c.x === x && c.y === y);
-    if (collectible && !collectible.collected) {
+    const collectible = collectibles.find(c => c.x === x && c.y === y && !c.collected);
+    if (collectible) {
       return (
         <div className="w-full h-full flex items-center justify-center">
           <div className="w-2 h-2 bg-cyber-neon-pink animate-pulse-glow"></div>
@@ -154,10 +193,25 @@ const NotFound: React.FC = () => {
         >
           404
         </h1>
-        <p className="text-xl text-cyber-neon-blue font-future mb-4">TIMELINE FRACTURE DETECTED</p>
-        <p className="text-gray-400 max-w-md mx-auto mb-6">
-          The requested digital artifact does not exist in this dimension. System will auto-redirect in {countdown} seconds.
+        <div className="flex items-center justify-center gap-2">
+          <AlertTriangle className="text-cyber-neon-blue h-6 w-6" />
+          <p className="text-xl text-cyber-neon-blue font-future">TIMELINE FRACTURE DETECTED</p>
+          <AlertTriangle className="text-cyber-neon-blue h-6 w-6" />
+        </div>
+        
+        <p className="text-gray-400 max-w-md mx-auto my-4">
+          The requested digital artifact does not exist in this dimension.
+          {countdownActive && <span> System will auto-redirect in <span className="text-cyber-neon-green">{countdown}</span> seconds.</span>}
         </p>
+        
+        {countdownActive && (
+          <button 
+            onClick={() => setCountdownActive(false)}
+            className="text-cyber-neon-pink underline hover:text-cyber-neon-blue transition-colors text-sm"
+          >
+            Cancel auto-redirect
+          </button>
+        )}
       </div>
 
       {showInstructions ? (
@@ -201,20 +255,27 @@ const NotFound: React.FC = () => {
         </div>
       )}
 
-      <div className="flex space-x-4">
+      <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
         <Link
-          to="/"
-          className="flex items-center gap-2 bg-cyber-neon-blue text-cyber-black font-pixel px-4 py-2 hover:bg-cyber-neon-blue/80 transition-colors"
+          to="/home"
+          className="flex items-center justify-center gap-2 bg-cyber-neon-blue text-cyber-black font-pixel px-4 py-2 hover:bg-cyber-neon-blue/80 transition-colors"
         >
           <Home size={16} />
           <span>RETURN HOME</span>
         </Link>
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 bg-transparent border border-cyber-neon-pink text-cyber-neon-pink font-pixel px-4 py-2 hover:bg-cyber-neon-pink/10 transition-colors"
+          className="flex items-center justify-center gap-2 bg-transparent border border-cyber-neon-pink text-cyber-neon-pink font-pixel px-4 py-2 hover:bg-cyber-neon-pink/10 transition-colors"
         >
           <RotateCcw size={16} />
           <span>GO BACK</span>
+        </button>
+        <button
+          onClick={handleManualNavigation}
+          className="flex items-center justify-center gap-2 bg-transparent border border-cyber-neon-green text-cyber-neon-green font-pixel px-4 py-2 hover:bg-cyber-neon-green/10 transition-colors"
+        >
+          <RefreshCw size={16} />
+          <span>MANUAL REDIRECT</span>
         </button>
       </div>
 
