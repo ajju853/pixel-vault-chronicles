@@ -68,14 +68,17 @@ const PixelCursor: React.FC = () => {
 
   return (
     <>
-      <style jsx global>{`
-        body {
-          cursor: none;
-        }
-        a, button, [role="button"], input, label, select, textarea {
-          cursor: none;
-        }
-      `}</style>
+      {/* Using style tag as a string instead of with JSX attributes */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          body {
+            cursor: none;
+          }
+          a, button, [role="button"], input, label, select, textarea {
+            cursor: none;
+          }
+        `
+      }} />
       
       <div 
         className="pointer-events-none fixed z-[999] transform -translate-x-1/2 -translate-y-1/2 hidden md:block"
