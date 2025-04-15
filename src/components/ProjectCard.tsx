@@ -103,25 +103,32 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       transition: 'filter 0.3s ease'
     };
     
-    // Apply specific enhancements for Egyptian Tech Tablet
-    if (id === 'cyber-relic') {
+    // Apply specific enhancements for Cyber Relic
+    if (id === 'cyber-relic' || imageSrc.includes('photo-1531731457588')) {
       return {
         ...baseStyle,
-        filter: hover ? 'brightness(1.4) contrast(1.3) saturate(1.2)' : 'brightness(1.1) contrast(1.1) saturate(1.1)',
+        filter: hover ? 'brightness(1.5) contrast(1.3) saturate(1.4)' : 'brightness(1.3) contrast(1.2) saturate(1.3)',
         backgroundBlendMode: 'normal'
       };
     }
     
-    // Apply specific enhancements for Cyber Relic
-    if (id === 'cyber-relic' || id === 'egyptian-tech-tablet' || imageSrc.includes('photo-1531731457588')) {
+    // Apply specific enhancements for Egyptian Tech Tablet
+    if (id === 'egyptian-tech-tablet') {
       return {
         ...baseStyle,
-        filter: hover ? 'brightness(1.5) contrast(1.2) saturate(1.3)' : 'brightness(1.2) contrast(1.1) saturate(1.2)',
+        filter: hover ? 'brightness(1.4) contrast(1.3) saturate(1.2)' : 'brightness(1.2) contrast(1.1) saturate(1.1)',
         backgroundBlendMode: 'normal'
       };
     }
     
     return baseStyle;
+  };
+
+  // Determine if we should add the enhancement overlay
+  const shouldAddOverlay = () => {
+    return id === 'cyber-relic' || 
+           id === 'egyptian-tech-tablet' || 
+           imageSrc.includes('photo-1531731457588');
   };
   
   return (
@@ -163,8 +170,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             />
             
             {/* Image Enhancement Layer for specific projects */}
-            {(id === 'cyber-relic' || imageSrc.includes('photo-1531731457588')) && (
-              <div className="absolute inset-0 bg-gradient-to-b from-cyber-neon-blue/10 to-cyber-neon-pink/10 mix-blend-overlay"></div>
+            {shouldAddOverlay() && (
+              <div className="absolute inset-0 bg-gradient-to-b from-cyber-neon-blue/20 to-cyber-neon-pink/20 mix-blend-overlay pointer-events-none"></div>
             )}
             
             {/* Scan lines effect */}

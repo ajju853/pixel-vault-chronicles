@@ -1,12 +1,37 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import StarfieldBackground from '../components/StarfieldBackground';
+import BootSequence from '../components/BootSequence';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate a boot sequence
+    const timer = setTimeout(() => {
+      setLoading(false);
+      // Navigate to home page after boot sequence completes
+      navigate('/home');
+    }, 5000); // 5 seconds for boot sequence
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="relative min-h-screen bg-cyber-black overflow-hidden">
+      <StarfieldBackground />
+      
+      {loading ? (
+        <BootSequence />
+      ) : (
+        <div className="flex items-center justify-center h-screen">
+          <p className="text-cyber-neon-green font-pixel text-xl animate-pulse">
+            Redirecting to home...
+          </p>
+        </div>
+      )}
     </div>
   );
 };
